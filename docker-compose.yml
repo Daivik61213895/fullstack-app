@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  react-app:
+    build:
+      context: ./fullstack-app-fe
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - fullstack-app-be
+    restart: always
+
+  fullstack-app-be:
+    build:
+      context: ./fullstack-app-be
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
