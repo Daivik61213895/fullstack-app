@@ -7,20 +7,24 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddCors(options =>
-{
-options.AddPolicy("AllowFrontend",
-    policy =>
-{
-policy.AllowAnyOrigin() // Allow requests from React app(if build locally use localhost)
-      .AllowAnyHeader()
-      .AllowAnyMethod();
-});
-});
+// builder.Services.AddCors(options =>
+// {
+// options.AddPolicy("AllowFrontend",
+//     policy =>
+// {
+// policy.AllowAnyOrigin() // Allow requests from React app(if build locally use localhost)
+//       .AllowAnyHeader()
+//       .AllowAnyMethod();
+// });
+// });
 
 // Use CORS
 var app = builder.Build();
-app.UseCors("AllowFrontend");
+app.UseCors(x => x
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .SetIsOriginAllowed(origin => true) // allow any origin
+    .AllowCredentials());
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
