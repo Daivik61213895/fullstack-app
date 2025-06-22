@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 869935099884.dkr.ecr.us-east-1.amazonaws.com
+      - echo Fetching backend public IP...
+      - BACKEND_IP=$(aws ecs describe-tasks --cluster fullstack-app-cluster --tasks $(aws ecs list-tasks --cluster fullstack-app-cluster --service-name backend-service --query 'taskArns[0]' --output text) --query 'tasks[0].attachments[0].details[?name==`privateIPv4Address`].value' --output text)
+      - echo "REACT_APP_BACKEND_URL=http://$BACKEND_IP:5000/api" > .env
+  build:
+    commands:
+      - echo Building React app with dynamic backend URL...
+      - npm install
+      - npm run build
+      - echo Building Docker image for frontend...
+      - docker build -t fullstack-app-frontend .
+      - docker tag fullstack-app-frontend:latest 869935099884.dkr.ecr.us-east-1.amazonaws.com/fullstack-app-frontend:latest
+  post_build:
+    commands:
+      - echo Pushing Docker image to ECR...
+      - docker push 869935099884.dkr.ecr.us-east-1.amazonaws.com/fullstack-app-frontend:latest
+
+artifacts:
+  files:
+    - '**/*'
