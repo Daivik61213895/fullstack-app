@@ -1,0 +1,31 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+  build:
+    commands:
+      - echo Building Docker images for frontend and backend...
+      - cd fullstack-app-be
+      - docker build -t fullstack-app-backend .
+      - docker tag fullstack-app-backend:latest <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/fullstack-app-backend:latest
+      - docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/fullstack-app-backend:latest
+      - cd ../fullstack-app-fe
+      - echo Fetching backend IP dynamically...
+      - BACKEND_IP=$(aws ecs describe-tasks --cluster fullstack-app-cluster --tasks $(aws ecs list-tasks --cluster fullstack-app-cluster --service-name backend-service --query 'taskArns[0]' --output text) --query 'tasks[0].attachments[0].details[?name==`privateIPv4Address`].value' --output text)
+      - echo "REACT_APP_BACKEND_URL=http://$BACKEND_IP:5000/api" > .env
+      - npm install
+      - npm run build
+      - docker build -t fullstack-app-frontend .
+      - docker tag fullstack-app-frontend:latest <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/fullstack-app-frontend:latest
+      - docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/fullstack-app-frontend:latest
+  post_build:
+    commands:
+      - echo Updating ECS services to use the latest images...
+      - aws ecs update-service --cluster fullstack-app-cluster --service backend-service --force-new-deployment
+
+artifacts:
+  files:
+    - '**/*'
