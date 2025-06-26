@@ -16,7 +16,7 @@ phases:
       - docker push 869935099884.dkr.ecr.us-east-1.amazonaws.com/weatherapp-ecr-be:latest
       - cd ../fullstack-app-fe
       - echo Fetching backend IP dynamically...
-      - BACKEND_IP=$(aws ecs describe-tasks --cluster weather-app-new-cluster --tasks $(aws ecs list-tasks --cluster weather-app-new-cluster --service-name weatherapp-be-service --query 'taskArns[0]' --output text) --query 'tasks[0].attachments[0].details[?name==`privateIPv4Address`].value' --output text)
+      - BACKEND_IP=$(aws ecs describe-tasks --cluster weather-app-new-cluster --tasks $(aws ecs list-tasks --cluster weather-app-new-cluster --service-name weatherapp-be-service --query 'taskArns[0]' --output text) --query 'tasks[0].attachments[0].details[?name==`publicIPv4Address`].value' --output text)
       - echo "REACT_APP_BACKEND_URL=http://$BACKEND_IP:5000/api" > .env
       - npm install
       - npm run build
