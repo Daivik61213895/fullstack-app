@@ -18,7 +18,7 @@ phases:
       - echo Fetching backend private IP dynamically...
       - BACKEND_IP=$(aws ecs describe-tasks --cluster weather-app-new-cluster --tasks $(aws ecs list-tasks --cluster weather-app-new-cluster --service-name weatherapp-be-service --query 'taskArns[0]' --output text) --query 'tasks[0].containers[0].networkInterfaces[0].privateIpv4Address' --output text)
       - echo "Backend IP= $BACKEND_IP"
-      - echo "REACT_APP_BACKEND_URL=http://weatherapp-be-service.local:5000/api" > .env
+      - echo "REACT_APP_BACKEND_URL=http://weatherapp-be-service.local/api" > .env
       - npm install
       - npm run build
       - docker build -t weatherapp-ecr-fe .
