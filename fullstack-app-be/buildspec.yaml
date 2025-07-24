@@ -5,16 +5,19 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 869935099884.dkr.ecr.us-east-1.amazonaws.com
+      - echo Logging in to Docker Hub...
+      - docker login --username dave1395 --password dckr_pat_9kRVamWoqxlAJ5t0Dsje6lUUCk0
   build:
     commands:
-      - echo Building Docker image for backend...
-      - docker build -t fullstack-app-backend .
-      - docker tag fullstack-app-backend:latest 869935099884.dkr.ecr.us-east-1.amazonaws.com/fullstack-app-backend:latest
+      - echo Building Docker images for backend...
+      - docker build -t weatherapp-ecr-be .
   post_build:
     commands:
-      - echo Pushing Docker image to ECR...
-      - docker push 869935099884.dkr.ecr.us-east-1.amazonaws.com/fullstack-app-backend:latest
+      - docker tag weatherapp-ecr-be:latest 869935099884.dkr.ecr.us-east-1.amazonaws.com/weatherapp-ecr-be:latest
+      - docker push 869935099884.dkr.ecr.us-east-1.amazonaws.com/weatherapp-ecr-be:latest
+      - echo Writing image definition file...
+      - printf '[{"name":"backend-container","imageUri":"%s"}]' 869935099884.dkr.ecr.us-east-1.amazonaws.com/weatherapp-ecr-be:latest > bebuilddefinitions.json
 
 artifacts:
   files:
-    - '**/*'
+    - bebuilddefinitions.json

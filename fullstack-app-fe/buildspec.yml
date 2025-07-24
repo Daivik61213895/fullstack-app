@@ -5,22 +5,21 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 869935099884.dkr.ecr.us-east-1.amazonaws.com
-      - echo Fetching backend public IP...
-      - BACKEND_IP=$(aws ecs describe-tasks --cluster fullstack-app-cluster --tasks $(aws ecs list-tasks --cluster fullstack-app-cluster --service-name backend-service --query 'taskArns[0]' --output text) --query 'tasks[0].attachments[0].details[?name==`privateIPv4Address`].value' --output text)
-      - echo "REACT_APP_BACKEND_URL=http://$BACKEND_IP:5000/api" > .env
+      - echo Logging in to Docker Hub...
+      - docker login --username dave1395 --password dckr_pat_9kRVamWoqxlAJ5t0Dsje6lUUCk0
   build:
     commands:
-      - echo Building React app with dynamic backend URL...
+      - echo Building Docker images for frontend...
       - npm install
       - npm run build
-      - echo Building Docker image for frontend...
-      - docker build -t fullstack-app-frontend .
-      - docker tag fullstack-app-frontend:latest 869935099884.dkr.ecr.us-east-1.amazonaws.com/fullstack-app-frontend:latest
+      - docker build -t weatherapp-ecr-fe .
   post_build:
     commands:
-      - echo Pushing Docker image to ECR...
-      - docker push 869935099884.dkr.ecr.us-east-1.amazonaws.com/fullstack-app-frontend:latest
+      - docker tag weatherapp-ecr-fe:latest 869935099884.dkr.ecr.us-east-1.amazonaws.com/weatherapp-ecr-fe:latest
+      - docker push 869935099884.dkr.ecr.us-east-1.amazonaws.com/weatherapp-ecr-fe:latest
+      - echo Writing image definition file...
+      - printf '[{"name":"frontend-container","imageUri":"%s"}]' 869935099884.dkr.ecr.us-east-1.amazonaws.com/weatherapp-ecr-fe:latest > febuilddefinitions.json
 
 artifacts:
   files:
-    - '**/*'
+    - febuilddefinitions.json
