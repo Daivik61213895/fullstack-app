@@ -16,7 +16,11 @@ phases:
     commands:
       - docker tag weatherapp-ecr-be:latest 869935099884.dkr.ecr.us-east-1.amazonaws.com/weatherapp-ecr-be:latest
       - docker push 869935099884.dkr.ecr.us-east-1.amazonaws.com/weatherapp-ecr-be:latest
+      - echo Writing image definition file...
+      - printf '[{"name":"backend-container","imageUri":"%s"}]' 869935099884.dkr.ecr.us-east-1.amazonaws.com/weatherapp-ecr-be:latest > bebuilddefinitions.json
+      - echo Listing files in the current directory...
+      - ls -l
 
 artifacts:
   files:
-    - '**/*'
+    - bebuilddefinitions.json
