@@ -22,4 +22,4 @@ phases:
 
 artifacts:
   files:
-    - febuilddefinitions.json
+    - fullstack-app-fe/febuilddefinitions.json
