@@ -10,6 +10,7 @@ phases:
   build:
     commands:
       - echo Building Docker images for frontend...
+      - cd fullstack-app-fe
       - npm install
       - npm run build
       - docker build -t weatherapp-ecr-fe .
